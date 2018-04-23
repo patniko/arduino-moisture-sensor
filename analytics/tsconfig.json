@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+      "module": "commonjs",
+      "noImplicitAny": true,
+      "noResolve": false,
+      "target": "ES2015",
+      "sourceMap": true,
+      "lib": [ "es2015"],
+      "rootDir": "./"
+  }
+}

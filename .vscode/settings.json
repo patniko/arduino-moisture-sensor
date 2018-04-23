@@ -1,5 +1,12 @@
 {
   "azureFunctions.projectLanguage": "JavaScript",
   "azureFunctions.projectRuntime": "~1",
-  "azureFunctions.templateFilter": "Verified"
+  "azureFunctions.templateFilter": "Verified",
+
+  "files.exclude": {
+  "**/.git": true,
+  "**/.DS_Store": true,
+  "**/*.js": { "when": "$(basename).ts"},
+  "**/*?.js": { "when": "$(basename).tsx"},
+  "**/*.js.map": true
 }

@@ -130,7 +130,7 @@ class AppCenterClient {
             let res = await fetch(url, requestInfo)
             let response = await res.json();
         } catch (exception) {
-            console.log(`WIQL Query Error: ${exception}`);
+            console.log(`Send Log Error: ${exception}`);
         }
     }
 }

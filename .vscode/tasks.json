@@ -28,6 +28,14 @@
           }
         }
       ]
+    },
+    {
+      "type": "typescript",
+      "tsconfig": "analytics/tsconfig.json",
+      "option": "watch",
+      "problemMatcher": [
+        "$tsc-watch"
+      ]
     }
   ]
 }
