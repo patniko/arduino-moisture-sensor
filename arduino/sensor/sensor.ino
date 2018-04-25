@@ -19,6 +19,7 @@ void setup() {
   lcd.begin(16,2);
 
   setupWifi();
+  connectWifi();
 
   Serial.print("Air Baseline Reading: ");
   Serial.println(airValue);
@@ -46,7 +47,7 @@ void loop() {
   {
       displayReading("Dry");
   }
-  delay(1000);
+  delay(300);
 }
 
 void msg(String value)
