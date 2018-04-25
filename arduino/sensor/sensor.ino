@@ -1,9 +1,9 @@
 #include <LiquidCrystal.h>
 #include <math.h>
 
-LiquidCrystal lcd(12,11,5,4,3,2);
-const int sensorPin = A0;
-const float airValue = 528.00;   // Normalize to reading from air
+LiquidCrystal lcd(23,22,28,30,32,34);
+const int sensorPin = A8;
+const float airValue = 560.00;   // Normalize to reading from air
 const float waterValue = 280.00;  // Normalize to reading in water
 const float range = airValue - waterValue;   
 const float intervals = range/3;
@@ -45,23 +45,16 @@ void loop() {
   {
       displayReading("Dry");
   }
-  delay(500);
+  delay(1000);
 }
 
 void displayReading(String value) {
   lcd.clear();
   lcd.setCursor(0,0);
-  lcd.print("Moisture: ");
-  lcd.setCursor(0,1);
-  lcd.print(value);
+  lcd.print("Zone 1: ");
+  lcd.setCursor(8,0);
   
-  char buffer [9];
-  dtostrf(soilMoisturePercentage, 4, 2, buffer);
-
-  char msg [9];
-  strcat(msg, "(");
-  strcat(msg, buffer);
-  strcat(msg, String("%)").c_str());
-  lcd.setCursor(value.length() + 1, 1);
-  lcd.print(msg);
+  char percent [6]; 
+  sprintf(percent, "%s%%", String(soilMoisturePercentage).c_str());
+  lcd.print(percent);
 }
