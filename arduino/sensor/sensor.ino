@@ -2,8 +2,9 @@
 #include <math.h>
 
 LiquidCrystal lcd(23,22,28,30,32,34);
+
 const int sensorPin = A8;
-const float airValue = 560.00;   // Normalize to reading from air
+const float airValue = 580.00;    // Normalize to reading from air
 const float waterValue = 280.00;  // Normalize to reading in water
 const float range = airValue - waterValue;   
 const float intervals = range/3;
@@ -16,9 +17,9 @@ void setup() {
   pinMode(sensorPin, INPUT);
   
   lcd.begin(16,2);
-  lcd.setCursor(0,0);
-  lcd.print("Starting up!");
-  
+
+  setupWifi();
+
   Serial.print("Air Baseline Reading: ");
   Serial.println(airValue);
   Serial.print("Water Baseline Reading:");
@@ -48,6 +49,18 @@ void loop() {
   delay(1000);
 }
 
+void msg(String value)
+{
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print(value);
+}
+void msg2(String value)
+{
+  lcd.setCursor(0,1);
+  lcd.print(value);
+}
+
 void displayReading(String value) {
   lcd.clear();
   lcd.setCursor(0,0);
@@ -57,4 +70,7 @@ void displayReading(String value) {
   char percent [6]; 
   sprintf(percent, "%s%%", String(soilMoisturePercentage).c_str());
   lcd.print(percent);
+
+  lcd.setCursor(0,1);
+  lcd.print(value);
 }
