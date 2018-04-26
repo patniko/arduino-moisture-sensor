@@ -2,12 +2,11 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Attach to JavaScript Functions",
+      //func host start --debug vscode
+      "name": "Attach to Azure Functions",
       "type": "node",
       "request": "attach",
-      "port": 5858,
-      "protocol": "inspector",
-      "preLaunchTask": "runFunctionsHost"
+      "port": 5858
     }
   ]
 }

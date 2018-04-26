@@ -3,10 +3,11 @@
   "azureFunctions.projectRuntime": "~1",
   "azureFunctions.templateFilter": "Verified",
 
-  "files.exclude": {
-  "**/.git": true,
-  "**/.DS_Store": true,
-  "**/*.js": { "when": "$(basename).ts"},
-  "**/*?.js": { "when": "$(basename).tsx"},
-  "**/*.js.map": true
+    "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/*.js": { "when": "$(basename).ts"},
+    "**/*?.js": { "when": "$(basename).tsx"},
+    "**/*.js.map": true
+  }
 }
