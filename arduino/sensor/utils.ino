@@ -27,3 +27,4 @@ void displayReading(String value) {
   lcd.setCursor(0,1);
   lcd.print(value);
 }
+

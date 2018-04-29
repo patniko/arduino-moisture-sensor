@@ -47,6 +47,6 @@ void loop() {
   {
       displayReading("Dry");
   }
-  delay(300);
+  delay(500);
 }
 

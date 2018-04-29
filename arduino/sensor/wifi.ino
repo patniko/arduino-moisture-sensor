@@ -167,6 +167,12 @@ unsigned long getTime(void) {
   return t;
 }
 
+String trackUrl(String zone, float soilMoisturePercentage) {
+  
+  char url [50]; 
+  sprintf(url, "/api/TrackMetric/%s/%s", zone.c_str(), String(soilMoisturePercentage).c_str());
+  return url;
+}
 
 void trackEvent(float value) {
   uint32_t ip = 0;
