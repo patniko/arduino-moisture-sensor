@@ -6,7 +6,7 @@
       "type": "httpTrigger",
       "direction": "in",
       "name": "req",
-      "route": "TrackMetric/{name}/{measurement}",
+      "route": "TrackMetric/{description}/{measurement}",
       "methods": [
         "get"
       ]

@@ -1,11 +1,27 @@
 import { v1 } from 'uuid'
+import { Session } from 'inspector';
 
-class DeviceInfo {
+const request = require('request-promise');
+
+function UTCNow() : Date {
+    const date = new Date(); 
+    return new Date(
+        date.getUTCFullYear(), 
+        date.getUTCMonth(), 
+        date.getUTCDate(), 
+        date.getUTCHours(), 
+        date.getUTCMinutes(), 
+        date.getUTCSeconds()
+    ); 
+}
+
+export class DeviceInfo {
+    AppNamespace: string; // "com.microsoft.bing", "com.microsoft.test", null
     AppVersion: string; // "3.0.0", "3.0.0", "3.0.0", "1.0.0", "1.1.0", "1.0.0-beta", "3.1.9-alpha"
-    AppSecret: string;
+    AppBuild: string; // "1", "2", "3"
     CarrierCountry: string; // "US", "US", "US", "CA", "FR", "FR", "KP", "CN"
     CarrierName: string; // "AT&T", "Verizon", "Verizon", "Cricket"
-    Locale: string; // "ES", "FR", "EN", "EN", "EN", "ZH"
+    Locale: string;
     Model: string; // "PC", "X10", "iPhone1,1", "iPod5,1", "iPad4,5"
     OemName: string; // "Dell", "Samsung", "Lenovo"
     OsApiLevel: string; // 1, 3
@@ -13,122 +29,123 @@ class DeviceInfo {
     OsVersion: string; // "8.0.0", "8.1.0", "10.0.0"
     OsBuild: string; // "", "1", "2"
     ScreenSize: string; // "1024x768", "1024x768", "1024x768", "320x240", "860x640"
-    TimeZoneOffset: string; // -4, 4
-    AppBuild: string; // "1", "2", "3"
-    AppNamespace: string; // "com.microsoft.bing", "com.microsoft.test", null
-    SdkName: string; // "appcenter.android" | "appcenter.ios";
-    SdkVersion: string; // "appcenter.android" | "appcenter.ios";
-    WrapperSdkName: "appcenter.xamarin" | "hockeysdk.cordova"; // "appcenter.xamarin", "hockeysdk.cordova", null
-    WrapperSdkVersion: string; // "1.0"
-    LiveUpdateReleaseLabel: string; // "1.0", "2.0"
-    LiveUpdatePackageHash: string; // "1234564654654546", "dsadsdasd3211321233"
-    LiveUpdateDeploymentKey: string; // "prod", "stage"
+    TimeZoneOffset: number; // -4, 4
+    SdkName: "appcenter.node";
+    SdkVersion: string; // "0.0.1";
 }
 
-class StartServiceLog {
-    SessionId: string;
-    Timestamp: string = new Date().toUTCString();
+export class SessionLogs {
+    logs: any;
+}
+
+export class StartServiceLog {
+    Type: "startService";
+    Timestamp: string = UTCNow().toJSON();
     Device: DeviceInfo;
     Services: string[] = ["analytics"];
 }
 
-class EventLog {
+export class StartSessionLog {
+    Type: "startSession";
+    Sid: string;
+    Timestamp: string = UTCNow().toJSON();
+    Device: DeviceInfo;
+    Services: string[] = ["analytics"];
+}
+
+export class EventLog {
+    Type: "event";
+    Sid: string;
     Id: string;
     Name: string;
-    Timestamp: string = new Date().toUTCString();
-    Sid: string;
-    Properties: EventProperties[];
+    Timestamp: string = UTCNow().toJSON();
+    Properties: any;
     Device: DeviceInfo;
 }
 
-interface EventProperties {
-    [key: string]: string;
- }
-
-class WeightedString {
-    Weight: number;
-    Value: string;
-    constructor(weight: number, value: string)
-    {
-        this.Weight = weight;
-        this.Value = value;
-    }
-}
-
-class NumberProperty {
-    Name: string;
-    Value: number;
-    constructor(name: string, value: number)
-    {
-        this.Name = name;
-        this.Value = value;
-    }
-}
-
-class StringProperty {
-    Name: string;
-    Value: string;
-    constructor(name: string, value: string)
-    {
-        this.Name = name;
-        this.Value = value;
-    }
-}
-
-class DateTimeProperty {
-    Name: string;
-    Value: string;
-    constructor(name: string, value: string)
-    {
-        this.Name = name;
-        this.Value = value;
-    }
-}
-
-class BooleanProperty {
-    Name: string;
-    Value: boolean;
-    constructor(name: string, value: boolean)
-    {
-        this.Name = name;
-        this.Value = value;
-    }
-}
-
-class AppCenterClient {
+export class AppCenterClient {
     ingestionUrl: string = "https://in.appcenter.ms/logs?Api-version=1.0.0";
     appSecret: string;
     installId: string;
+    device: DeviceInfo;
+    sessionId: string;
 
-    constructor(appSecret: string, installId: string) {
+    queue: any[];
+    processor: any;
+
+    constructor(appSecret: string, installId: string, deviceInfo: DeviceInfo) {
         this.appSecret = appSecret;
         this.installId = installId;
+
+        this.device = deviceInfo;
+        this.sessionId = v1();
+        this.queue = [];
     }
 
-    async startSession(session: StartServiceLog[]) {
-        return await this.sendRequest(JSON.stringify(session), session.length);
+    public async startService() {
+        let serviceLog = new StartSessionLog();
+        serviceLog.Device = this.device;
+        await this.flushEvent(serviceLog);
+        
+        this.processor = setInterval(() => {
+            this.flush();
+        }, 5000);
     }
 
-    async eventLog(event: EventLog[]) {
-        return await this.sendRequest(JSON.stringify(event), event.length);
+    public startSession() {
+        let eventLog = new StartSessionLog();
+        eventLog.Device = this.device;
+        eventLog.Sid = this.sessionId;
+        this.queue.push(eventLog);
+    }
+
+    public trackEvent(name: string, properties: any) {
+        let eventLog = new EventLog();
+        eventLog.Device = this.device;
+        eventLog.Sid = this.sessionId;
+        eventLog.Properties = properties;
+        this.queue.push(eventLog);
+    }
+
+    public stopService() {
+        clearInterval(this.processor);
+    }
+
+    public async flushEvent(event: StartServiceLog | StartSessionLog | EventLog) {
+        const logs: SessionLogs = {
+            logs: [event]
+        }
+        await this.sendRequest(JSON.stringify(logs), 1)
+    }
+
+    public async flush() {
+        let records: any[] = [];
+        while (this.queue.length) records.push(this.queue.splice(0,1)[0]);
+        if(records.length > 0) {
+            const logs: SessionLogs = {
+                logs: records
+            }
+            await this.sendRequest(JSON.stringify(logs), records.length)
+        }
     }
 
     async sendRequest(body: string, logCount: number) {
-        var url: string = this.ingestionUrl;
-        var requestInfo: any = { 
+        const correlationId = v1();
+        const url: string = this.ingestionUrl;
+        const requestInfo: any = { 
             method: 'POST', 
             headers: {
                 "Content-Type": "application/json",
                 "App-Secret": this.appSecret,
                 "Install-ID": this.installId,
                 "LogCount": logCount,
-                "X-Correlation-ID": v1()
+                "X-Correlation-ID": correlationId
             },
             body: body
         };
         try {
-            let res = await fetch(url, requestInfo)
-            let response = await res.json();
+            const response = await request(url, requestInfo);
+            console.log(response);
         } catch (exception) {
             console.log(`Send Log Error: ${exception}`);
         }
