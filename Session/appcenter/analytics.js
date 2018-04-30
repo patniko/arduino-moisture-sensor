@@ -9,82 +9,111 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const uuid_1 = require("uuid");
+const request = require('request-promise');
+function UTCNow() {
+    const date = new Date();
+    return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds());
+}
 class DeviceInfo {
 }
+exports.DeviceInfo = DeviceInfo;
+class SessionLogs {
+}
+exports.SessionLogs = SessionLogs;
 class StartServiceLog {
     constructor() {
-        this.Timestamp = new Date().toUTCString();
+        this.Timestamp = UTCNow().toJSON();
         this.Services = ["analytics"];
     }
 }
+exports.StartServiceLog = StartServiceLog;
+class StartSessionLog {
+    constructor() {
+        this.Timestamp = UTCNow().toJSON();
+        this.Services = ["analytics"];
+    }
+}
+exports.StartSessionLog = StartSessionLog;
 class EventLog {
     constructor() {
-        this.Timestamp = new Date().toUTCString();
+        this.Timestamp = UTCNow().toJSON();
     }
 }
-class WeightedString {
-    constructor(weight, value) {
-        this.Weight = weight;
-        this.Value = value;
-    }
-}
-class NumberProperty {
-    constructor(name, value) {
-        this.Name = name;
-        this.Value = value;
-    }
-}
-class StringProperty {
-    constructor(name, value) {
-        this.Name = name;
-        this.Value = value;
-    }
-}
-class DateTimeProperty {
-    constructor(name, value) {
-        this.Name = name;
-        this.Value = value;
-    }
-}
-class BooleanProperty {
-    constructor(name, value) {
-        this.Name = name;
-        this.Value = value;
-    }
-}
+exports.EventLog = EventLog;
 class AppCenterClient {
-    constructor(appSecret, installId) {
+    constructor(appSecret, installId, deviceInfo) {
         this.ingestionUrl = "https://in.appcenter.ms/logs?Api-version=1.0.0";
         this.appSecret = appSecret;
         this.installId = installId;
+        this.device = deviceInfo;
+        this.sessionId = uuid_1.v1();
+        this.queue = [];
     }
-    startSession(session) {
+    startService() {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.sendRequest(JSON.stringify(session), session.length);
+            let serviceLog = new StartSessionLog();
+            serviceLog.Device = this.device;
+            yield this.flushEvent(serviceLog);
+            this.processor = setInterval(() => {
+                this.flush();
+            }, 5000);
         });
     }
-    eventLog(event) {
+    startSession() {
+        let eventLog = new StartSessionLog();
+        eventLog.Device = this.device;
+        eventLog.Sid = this.sessionId;
+        this.queue.push(eventLog);
+    }
+    trackEvent(name, properties) {
+        let eventLog = new EventLog();
+        eventLog.Device = this.device;
+        eventLog.Sid = this.sessionId;
+        eventLog.Properties = properties;
+        this.queue.push(eventLog);
+    }
+    stopService() {
+        clearInterval(this.processor);
+    }
+    flushEvent(event) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.sendRequest(JSON.stringify(event), event.length);
+            const logs = {
+                logs: [event]
+            };
+            yield this.sendRequest(JSON.stringify(logs), 1);
+        });
+    }
+    flush() {
+        return __awaiter(this, void 0, void 0, function* () {
+            let records = [];
+            while (this.queue.length)
+                records.push(this.queue.splice(0, 1)[0]);
+            if (records.length > 0) {
+                const logs = {
+                    logs: records
+                };
+                yield this.sendRequest(JSON.stringify(logs), records.length);
+            }
         });
     }
     sendRequest(body, logCount) {
         return __awaiter(this, void 0, void 0, function* () {
-            var url = this.ingestionUrl;
-            var requestInfo = {
+            const correlationId = uuid_1.v1();
+            const url = this.ingestionUrl;
+            const requestInfo = {
                 method: 'POST',
                 headers: {
                     "Content-Type": "application/json",
                     "App-Secret": this.appSecret,
                     "Install-ID": this.installId,
                     "LogCount": logCount,
-                    "X-Correlation-ID": uuid_1.v1()
+                    "X-Correlation-ID": correlationId
                 },
                 body: body
             };
             try {
-                let res = yield fetch(url, requestInfo);
-                let response = yield res.json();
+                const response = yield request(url, requestInfo);
+                console.log(response);
             }
             catch (exception) {
                 console.log(`Send Log Error: ${exception}`);
@@ -92,4 +121,5 @@ class AppCenterClient {
         });
     }
 }
+exports.AppCenterClient = AppCenterClient;
 //# sourceMappingURL=analytics.js.map
