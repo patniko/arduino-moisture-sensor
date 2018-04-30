@@ -22,21 +22,24 @@ class SessionLogs {
 exports.SessionLogs = SessionLogs;
 class StartServiceLog {
     constructor() {
-        this.Timestamp = UTCNow().toJSON();
-        this.Services = ["analytics"];
+        this.type = "startService";
+        this.timestamp = UTCNow().toJSON();
+        this.services = ["analytics"];
     }
 }
 exports.StartServiceLog = StartServiceLog;
 class StartSessionLog {
     constructor() {
-        this.Timestamp = UTCNow().toJSON();
-        this.Services = ["analytics"];
+        this.type = "startSession";
+        this.timestamp = UTCNow().toJSON();
+        this.services = ["analytics"];
     }
 }
 exports.StartSessionLog = StartSessionLog;
 class EventLog {
     constructor() {
-        this.Timestamp = UTCNow().toJSON();
+        this.type = "event";
+        this.timestamp = UTCNow().toJSON();
     }
 }
 exports.EventLog = EventLog;
@@ -52,8 +55,8 @@ class AppCenterClient {
     startService() {
         return __awaiter(this, void 0, void 0, function* () {
             let serviceLog = new StartSessionLog();
-            serviceLog.Device = this.device;
-            yield this.flushEvent(serviceLog);
+            serviceLog.device = this.device;
+            this.queue.push(serviceLog);
             this.processor = setInterval(() => {
                 this.flush();
             }, 5000);
@@ -61,15 +64,17 @@ class AppCenterClient {
     }
     startSession() {
         let eventLog = new StartSessionLog();
-        eventLog.Device = this.device;
-        eventLog.Sid = this.sessionId;
+        eventLog.device = this.device;
+        eventLog.sid = this.sessionId;
         this.queue.push(eventLog);
     }
-    trackEvent(name, properties) {
+    trackEvent(name, fieldId, properties) {
         let eventLog = new EventLog();
-        eventLog.Device = this.device;
-        eventLog.Sid = this.sessionId;
-        eventLog.Properties = properties;
+        eventLog.name = name;
+        eventLog.id = fieldId;
+        eventLog.device = this.device;
+        eventLog.sid = this.sessionId;
+        eventLog.properties = properties;
         this.queue.push(eventLog);
     }
     stopService() {

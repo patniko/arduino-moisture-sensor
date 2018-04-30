@@ -13,22 +13,25 @@ module.exports = function (context, req) {
     return __awaiter(this, void 0, void 0, function* () {
         const APPCENTER_APP_SECRET = process.env['APPCENTER_APP_SECRET'];
         const APPCENTER_INSTALL_ID = process.env['APPCENTER_INSTALL_ID'];
+        const MOISTURE_ANALYTICS_FIELD_ID = process.env['MOISTURE_ANALYTICS_FIELD_ID'];
         const client = new analytics_1.AppCenterClient(APPCENTER_APP_SECRET, APPCENTER_INSTALL_ID, getDeviceInfo());
-        yield client.startService();
+        client.startService();
+        client.startSession();
+        yield client.flush();
         const description = req.params.description;
         const moisture = Math.round(req.params.measurement);
         if (moisture) {
-            client.trackEvent("Moisture", {
+            client.trackEvent("Moisture", MOISTURE_ANALYTICS_FIELD_ID, {
                 "Zone1 Reading": `${moisture}`,
                 "Zone1 Description": description
             });
             yield client.flush();
         }
-        context.log('Measurement: ' + req.params.name);
-        context.log('Value: ' + req.params.measurement);
+        context.log('Measurement: ' + req.params.description);
+        context.log('Value: ' + moisture);
         context.res = {
             // status: 200, /* Defaults to 200 */
-            body: `Received ${req.params.name} : ${req.params.measurement}`
+            body: `Received ${req.params.description} : ${moisture}`
         };
         context.done();
     });

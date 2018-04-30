@@ -39,28 +39,28 @@ export class SessionLogs {
 }
 
 export class StartServiceLog {
-    Type: "startService";
-    Timestamp: string = UTCNow().toJSON();
-    Device: DeviceInfo;
-    Services: string[] = ["analytics"];
+    type: string = "startService";
+    timestamp: string = UTCNow().toJSON();
+    device: DeviceInfo;
+    services: string[] = ["analytics"];
 }
 
 export class StartSessionLog {
-    Type: "startSession";
-    Sid: string;
-    Timestamp: string = UTCNow().toJSON();
-    Device: DeviceInfo;
-    Services: string[] = ["analytics"];
+    type: string = "startSession";
+    sid: string;
+    timestamp: string = UTCNow().toJSON();
+    device: DeviceInfo;
+    services: string[] = ["analytics"];
 }
 
 export class EventLog {
-    Type: "event";
-    Sid: string;
-    Id: string;
-    Name: string;
-    Timestamp: string = UTCNow().toJSON();
-    Properties: any;
-    Device: DeviceInfo;
+    type: string = "event";
+    sid: string;
+    id: string;
+    name: string;
+    timestamp: string = UTCNow().toJSON();
+    properties: any;
+    device: DeviceInfo;
 }
 
 export class AppCenterClient {
@@ -84,8 +84,8 @@ export class AppCenterClient {
 
     public async startService() {
         let serviceLog = new StartSessionLog();
-        serviceLog.Device = this.device;
-        await this.flushEvent(serviceLog);
+        serviceLog.device = this.device;
+        this.queue.push(serviceLog);
         
         this.processor = setInterval(() => {
             this.flush();
@@ -94,16 +94,18 @@ export class AppCenterClient {
 
     public startSession() {
         let eventLog = new StartSessionLog();
-        eventLog.Device = this.device;
-        eventLog.Sid = this.sessionId;
+        eventLog.device = this.device;
+        eventLog.sid = this.sessionId;
         this.queue.push(eventLog);
     }
 
-    public trackEvent(name: string, properties: any) {
+    public trackEvent(name: string, fieldId: string, properties: any) {
         let eventLog = new EventLog();
-        eventLog.Device = this.device;
-        eventLog.Sid = this.sessionId;
-        eventLog.Properties = properties;
+        eventLog.name = name;
+        eventLog.id = fieldId;
+        eventLog.device = this.device;
+        eventLog.sid = this.sessionId;
+        eventLog.properties = properties;
         this.queue.push(eventLog);
     }
 
