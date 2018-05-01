@@ -16,22 +16,22 @@ function UTCNow() : Date {
 }
 
 export class DeviceInfo {
-    AppNamespace: string; // "com.microsoft.bing", "com.microsoft.test", null
-    AppVersion: string; // "3.0.0", "3.0.0", "3.0.0", "1.0.0", "1.1.0", "1.0.0-beta", "3.1.9-alpha"
-    AppBuild: string; // "1", "2", "3"
-    CarrierCountry: string; // "US", "US", "US", "CA", "FR", "FR", "KP", "CN"
-    CarrierName: string; // "AT&T", "Verizon", "Verizon", "Cricket"
-    Locale: string;
-    Model: string; // "PC", "X10", "iPhone1,1", "iPod5,1", "iPad4,5"
-    OemName: string; // "Dell", "Samsung", "Lenovo"
-    OsApiLevel: string; // 1, 3
-    OsName: string; // "Android", "Android", "Android", "Android", "iOS", "iOS", "iOS"
-    OsVersion: string; // "8.0.0", "8.1.0", "10.0.0"
-    OsBuild: string; // "", "1", "2"
-    ScreenSize: string; // "1024x768", "1024x768", "1024x768", "320x240", "860x640"
-    TimeZoneOffset: number; // -4, 4
-    SdkName: "appcenter.node";
-    SdkVersion: string; // "0.0.1";
+    appNamespace: string; // "com.microsoft.bing", "com.microsoft.test", null
+    appVersion: string; // "3.0.0", "3.0.0", "3.0.0", "1.0.0", "1.1.0", "1.0.0-beta", "3.1.9-alpha"
+    appBuild: string; // "1", "2", "3"
+    carrierCountry: string; // "US", "US", "US", "CA", "FR", "FR", "KP", "CN"
+    carrierName: string; // "AT&T", "Verizon", "Verizon", "Cricket"
+    locale: string;
+    model: string; // "PC", "X10", "iPhone1,1", "iPod5,1", "iPad4,5"
+    oemName: string; // "Dell", "Samsung", "Lenovo"
+    osApiLevel: string; // 1, 3
+    osName: string; // "Android", "Android", "Android", "Android", "iOS", "iOS", "iOS"
+    osVersion: string; // "8.0.0", "8.1.0", "10.0.0"
+    osBuild: string; // "", "1", "2"
+    screenSize: string; // "1024x768", "1024x768", "1024x768", "320x240", "860x640"
+    timeZoneOffset: number; // -4, 4
+    sdkName: "appcenter.node";
+    sdkVersion: string; // "0.0.1";
 }
 
 export class SessionLogs {

@@ -37,22 +37,22 @@ module.exports = async function (context: any, req: any) {
 
 function getDeviceInfo() : DeviceInfo {
     let device: DeviceInfo = {
-      AppNamespace: "moisture.sensor",
-      AppVersion: "0.0.2",
-      AppBuild: "1",
-      CarrierCountry: "US",
-      CarrierName: "Azure",
-      Locale: "en_US",
-      Model: "Arduino MEGA 2560",
-      OemName: "Arduino",
-      OsApiLevel: "1",
-      OsName: "PatrickOS",
-      OsVersion: "0.0.1",
-      OsBuild: "1",
-      ScreenSize: "16x2",
-      TimeZoneOffset: -8,
-      SdkName: "appcenter.node",
-      SdkVersion: "0.0.1"
+      appNamespace: "moisture.sensor",
+      appVersion: "0.0.2",
+      appBuild: "1",
+      carrierCountry: "US",
+      carrierName: "Azure",
+      locale: "en_US",
+      model: "Arduino MEGA 2560",
+      oemName: "Arduino",
+      osApiLevel: "1",
+      osName: "PatrickOS",
+      osVersion: "0.0.1",
+      osBuild: "1",
+      screenSize: "16x2",
+      timeZoneOffset: -8,
+      sdkName: "appcenter.node",
+      sdkVersion: "0.0.1"
     }
     return device;
 }
