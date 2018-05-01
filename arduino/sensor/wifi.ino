@@ -17,6 +17,7 @@ Adafruit_CC3000_Client
 unsigned long
   currentTime = 0L;
 
+void(* resetArduino) (void) = 0;
 
 void setupWifi() {
   /* Initialize wifi */
@@ -26,45 +27,35 @@ void setupWifi() {
   {
     Serial.println(F("Unable to initialise the CC3000! Check your wiring?"));
     msg("Wifi error!");
-    delay(3000);
+    delay(2000);
   }
-  
-  Serial.println(F("OK\r\nDeleting old connection profiles..."));
-  cc3000.deleteProfiles();
   
   listSSIDResults();
 }
 
 void connectWifi() {
-  msg("Connecting");
-  msg2(String(WLAN_SSID));
   Serial.print("Connecting to network ");
   Serial.println(WLAN_SSID);
   /* NOTE: Secure connections are not available in 'Tiny' mode! */
   if(!cc3000.connectToAP(WLAN_SSID, WLAN_PASS, WLAN_SECURITY))
   {
     Serial.println(F("Unable to connect to wifi."));
-    msg("Wifi");
-    msg2("Unavailable");
-    delay(3000);
+    delay(2000);
     return;
   } 
   
   Serial.println(F("Requesting DHCP"));
-  msg("Configuring");
-  msg2("DHCP");
   int i = 0;
-  while (!cc3000.checkDHCP() && i < 50)
+  while (!cc3000.checkDHCP() && i < 100)
   {
     i = ++i;
     delay(100); 
   }  
-
-  displayConnectionDetails();
-  msg("Wifi");
-  msg2("Connected!");
-  delay(1000);
-  getTime();  
+  while (! displayConnectionDetails()) {
+    delay(1000);
+  }
+  delay(500);
+  //getTime();  
 }
 
 void listSSIDResults(void)
@@ -108,7 +99,7 @@ bool displayConnectionDetails(void)
     Serial.println(F("Unable to retrieve the IP Address!\r\n"));
     msg("DHCP");
     msg2("Unavailable");
-    delay(2000);
+    delay(1000);
     return false;
   }
   else
@@ -183,16 +174,22 @@ String trackUrl(String description, float soilMoisturePercentage) {
 }
 
 void trackEvent(String url) {
+  connectWifi();
+  
   uint32_t ip = 0;
-  // Try looking up the website's IP address
-  Serial.print(host); Serial.print(F(" -> "));
+  int i = 0;
   while (ip == 0) {
     if (! cc3000.getHostByName(host, &ip)) {
       Serial.println(F("Couldn't resolve!"));
     }
     delay(500);
+    
+    i = ++i;
+    if(i >= 10)
+      resetArduino();
   }
-  
+
+  Serial.print(host); Serial.print(F(" -> "));
   Adafruit_CC3000_Client www = cc3000.connectTCP(ip, 80);
   if (www.connected()) {
     www.fastrprint(F("GET "));
@@ -205,7 +202,7 @@ void trackEvent(String url) {
     Serial.println(F("Connection failed"));    
     return;
   }
-  
+  delay(1000);
   Serial.println(F("-------------------------------------"));
   
   /* Read data until either the connection is closed, or the idle timeout is reached. */ 
@@ -219,7 +216,7 @@ void trackEvent(String url) {
   }
   www.close();
   Serial.println(F("-------------------------------------"));
-  
+
   /* You need to make sure to clean up after yourself or the CC3000 can freak out */
   /* the next time your try to connect ... */
   Serial.println(F("\n\nDisconnecting"));

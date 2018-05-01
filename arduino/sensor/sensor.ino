@@ -19,7 +19,6 @@ void setup() {
   lcd.begin(16,2);
 
   setupWifi();
-  connectWifi();
 
   Serial.print("Air Baseline Reading: ");
   Serial.println(airValue);
