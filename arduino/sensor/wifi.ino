@@ -29,7 +29,7 @@ void setupWifi() {
     delay(3000);
   }
   
-  Serial.print(F("OK\r\nDeleting old connection profiles..."));
+  Serial.println(F("OK\r\nDeleting old connection profiles..."));
   cc3000.deleteProfiles();
   
   listSSIDResults();
@@ -136,7 +136,7 @@ unsigned long getTime(void) {
       timeReqA[] = { 227,  0,  6, 236 },
       timeReqB[] = {  49, 78, 49,  52 };
 
-    Serial.println("found\r\nConnecting to time server...");
+    Serial.print("found\r\nConnecting to time server...");
     startTime = millis();
     do {
       client = cc3000.connectUDP(ip, 123);
@@ -223,6 +223,6 @@ void trackEvent(String url) {
   /* You need to make sure to clean up after yourself or the CC3000 can freak out */
   /* the next time your try to connect ... */
   Serial.println(F("\n\nDisconnecting"));
-  //cc3000.disconnect();
+  cc3000.disconnect();
 }
 

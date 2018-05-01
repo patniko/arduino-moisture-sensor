@@ -21,8 +21,8 @@ module.exports = async function (context: any, req: any) {
     const moisture = Math.round(req.params.measurement);
     if(moisture && description) {
         client.trackEvent(MOISTURE_ANALYTICS_FIELD_NAME, MOISTURE_ANALYTICS_FIELD_ID, {
-            "Zone1 Reading": `${moisture}`, 
-            "Zone1 Description": description.toUpperCase()
+            "zone1_Value": `${moisture}`, 
+            "zone1_Description": description.toUpperCase()
         });
         await client.flush();
     }
