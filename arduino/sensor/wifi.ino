@@ -19,15 +19,19 @@ unsigned long
 
 
 void setupWifi() {
-  /* Initialise wifi */
+  /* Initialize wifi */
   msg("Starting wifi");
-  Serial.println(F("\nInitialising wifi ..."));
+  Serial.println(F("\nStarting wifi adapter..."));
   if (!cc3000.begin())
   {
     Serial.println(F("Unable to initialise the CC3000! Check your wiring?"));
     msg("Wifi error!");
     delay(3000);
   }
+  
+  Serial.print(F("OK\r\nDeleting old connection profiles..."));
+  cc3000.deleteProfiles();
+  
   listSSIDResults();
 }
 
@@ -60,9 +64,7 @@ void connectWifi() {
   msg("Wifi");
   msg2("Connected!");
   delay(1000);
-  getTime();
-
-trackEvent(24);
+  getTime();  
 }
 
 void listSSIDResults(void)
@@ -104,6 +106,9 @@ bool displayConnectionDetails(void)
   if(!cc3000.getIPAddress(&ipAddress, &netmask, &gateway, &dhcpserv, &dnsserv))
   {
     Serial.println(F("Unable to retrieve the IP Address!\r\n"));
+    msg("DHCP");
+    msg2("Unavailable");
+    delay(2000);
     return false;
   }
   else
@@ -167,19 +172,22 @@ unsigned long getTime(void) {
   return t;
 }
 
-String trackUrl(String zone, float soilMoisturePercentage) {
-  
-  char url [50]; 
-  sprintf(url, "/api/TrackMetric/%s/%s", zone.c_str(), String(soilMoisturePercentage).c_str());
+String trackUrl(String description, float soilMoisturePercentage) {
+  char url [250]; 
+  strcpy(url, route);
+  strcat(url, description.c_str());
+  strcat(url, "/");
+  strcat(url, String(soilMoisturePercentage).c_str());
+  strcat(url, auth_code);
   return url;
 }
 
-void trackEvent(float value) {
+void trackEvent(String url) {
   uint32_t ip = 0;
   // Try looking up the website's IP address
-  Serial.print("42265d68.ngrok.io"); Serial.print(F(" -> "));
+  Serial.print(host); Serial.print(F(" -> "));
   while (ip == 0) {
-    if (! cc3000.getHostByName("42265d68.ngrok.io", &ip)) {
+    if (! cc3000.getHostByName(host, &ip)) {
       Serial.println(F("Couldn't resolve!"));
     }
     delay(500);
@@ -188,9 +196,9 @@ void trackEvent(float value) {
   Adafruit_CC3000_Client www = cc3000.connectTCP(ip, 80);
   if (www.connected()) {
     www.fastrprint(F("GET "));
-    www.fastrprint("/api/TrackMetric/asdf/-80.4");
+    www.fastrprint(url.c_str());
     www.fastrprint(F(" HTTP/1.1\r\n"));
-    www.fastrprint(F("Host: ")); www.fastrprint("42265d68.ngrok.io"); www.fastrprint(F("\r\n"));
+    www.fastrprint(F("Host: ")); www.fastrprint(host); www.fastrprint(F("\r\n"));
     www.fastrprint(F("\r\n"));
     www.println();
   } else {
@@ -215,5 +223,6 @@ void trackEvent(float value) {
   /* You need to make sure to clean up after yourself or the CC3000 can freak out */
   /* the next time your try to connect ... */
   Serial.println(F("\n\nDisconnecting"));
+  //cc3000.disconnect();
 }
 

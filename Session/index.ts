@@ -6,6 +6,7 @@ module.exports = async function (context: any, req: any) {
     const APPCENTER_APP_SECRET = process.env['APPCENTER_APP_SECRET']; 
     const APPCENTER_INSTALL_ID = process.env['APPCENTER_INSTALL_ID'];
     const MOISTURE_ANALYTICS_FIELD_ID = process.env['MOISTURE_ANALYTICS_FIELD_ID'];
+    const MOISTURE_ANALYTICS_FIELD_NAME = process.env['MOISTURE_ANALYTICS_FIELD_NAME'];
 
     const client = new AppCenterClient(
         APPCENTER_APP_SECRET, 
@@ -18,10 +19,10 @@ module.exports = async function (context: any, req: any) {
 
     const description = req.params.description;
     const moisture = Math.round(req.params.measurement);
-    if(moisture) {
-        client.trackEvent("Moisture", MOISTURE_ANALYTICS_FIELD_ID, {
+    if(moisture && description) {
+        client.trackEvent(MOISTURE_ANALYTICS_FIELD_NAME, MOISTURE_ANALYTICS_FIELD_ID, {
             "Zone1 Reading": `${moisture}`, 
-            "Zone1 Description": description
+            "Zone1 Description": description.toUpperCase()
         });
         await client.flush();
     }

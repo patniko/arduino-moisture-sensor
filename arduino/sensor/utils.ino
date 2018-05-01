@@ -1,6 +1,9 @@
 #include <LiquidCrystal.h>
 #include <math.h>
 
+const int post_reading = 30;
+int reading = 15;
+
 void msg(String value)
 {
   lcd.clear();
@@ -15,6 +18,16 @@ void msg2(String value)
 }
 
 void displayReading(String value) {
+  reading = ++reading;
+  if(reading >= post_reading)
+  {
+    String address = trackUrl(value, soilMoisturePercentage);
+    Serial.print("Posting result: ");
+    Serial.println(address);
+    trackEvent(address);
+    reading = 0;
+  }
+  
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print("Zone 1: ");
